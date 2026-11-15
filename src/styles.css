@@ -1,0 +1,12 @@
+/*
+ * Visual design is pending the owner's decision (docs/decisions/0006-design-pending.md).
+ * Until then: browser default styles plus the system font. Tailwind's preflight reset is
+ * left out on purpose so markdown renders with the browser's own heading, list and link styles.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+html {
+  font-family: system-ui, sans-serif;
+}
