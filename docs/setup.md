@@ -74,3 +74,36 @@ Every admin server function verifies the Access token and `EDITOR_EMAIL` itself,
 - Publish a board, open `/` in a private window: it is listed and playable. A draft's `/play/<id>` link shows "No such board" there.
 - In the private window, `/admin` asks for a sign-in.
 - Start a game with **Phones as buzzers**, scan the QR code with a phone, pick a team, open a clue and press the button: the big screen shows who buzzed.
+
+## Finance
+
+The finance app in `apps/finance` is a third Worker, `messi-finance` (decision 0012). It holds private data, so until these steps are done it deploys but is **locked**: every page says so and nothing can be read or stored.
+
+### 1. Worker and database
+
+1. In `apps/finance`: `pnpm run deploy` once (or let the Deploy workflow do it). This creates the `messi-finance` Worker at `https://messi-finance.<your-subdomain>.workers.dev` **and its D1 database**, also named `messi-finance`. Nothing to create by hand: `wrangler.jsonc` has no database id on purpose, and the tables are created the first time the app is used.
+2. The `CLOUDFLARE_API_TOKEN` used by the Deploy workflow needs **D1: Edit** (the same permission Tubas games needs).
+3. Set the Worker secrets (in `apps/finance`: `pnpm exec wrangler secret put <NAME>`):
+
+| Secret                  | Value                                                          |
+| ----------------------- | -------------------------------------------------------------- |
+| `CF_ACCESS_TEAM_DOMAIN` | `<team>.cloudflareaccess.com`, same as the homepage            |
+| `CF_ACCESS_AUD`         | Audience (AUD) tag of the Access application from step 2 below |
+| `EDITOR_EMAIL`          | The email you sign in to Access with; the only person let in   |
+
+### 2. Cloudflare Access
+
+1. Zero Trust dashboard → Access → Applications → Add → **Self-hosted**. Give this app its **own** application: it must not share one with a site that has public paths.
+2. Domain: the `messi-finance` hostname with **no path**, so the whole site is covered, `/_serverFn` included.
+3. Policy: **Allow**, include **Emails** = your email only.
+4. Copy the **Application Audience (AUD) tag** into the `CF_ACCESS_AUD` secret.
+
+Every server function verifies the Access token and `EDITOR_EMAIL` itself, so the app fails closed: with a missing secret, a wrong AUD tag or a policy that lets someone else in, nobody gets any data.
+
+### 3. Check it
+
+- Open the site in a private window: Cloudflare asks for a sign-in before anything loads.
+- Sign in: the overview says "No transactions yet". Under Settings, add an account; under Import, upload a CSV export for it.
+- Before the secrets are set, the page shows "Locked: Cloudflare Access is not set up for this app." That is the expected state, not a fault.
+
+Your data lives only in the `messi-finance` D1 database in your Cloudflare account. To take a copy: `pnpm exec wrangler d1 export messi-finance --remote --output finance.sql` in `apps/finance` (keep that file out of the repo).

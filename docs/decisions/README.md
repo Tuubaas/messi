@@ -20,3 +20,4 @@ Open questions for the owner go in [`proposed/`](proposed/) (see the `propose-de
 | [0009](0009-monorepo.md)             | Monorepo; the homepage app lives in `apps/home`         | owner |
 | [0010](0010-tubas-games.md)          | Tubas games: quiz-board app in `apps/games`, on D1      | owner |
 | [0011](0011-buzzers.md)              | Phones as buzzers, fair by press time; Durable Objects  | owner |
+| [0012](0012-finance.md)              | Finance: private finance app in `apps/finance`, on D1   | owner |

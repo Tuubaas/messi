@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        app: [home, games]
+        app: [home, games, finance]
     defaults:
       run:
         working-directory: apps/${{ matrix.app }}

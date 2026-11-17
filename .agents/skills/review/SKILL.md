@@ -38,6 +38,7 @@ For every row in `docs/patterns.md` enforced by **review**, check the diff compl
 - [ ] Secrets are read only via `runtime.server.ts`; nothing secret is in `wrangler.jsonc`, client code, or logs
 - [ ] Homepage still ships zero JS: `grep -c "<script" apps/home/dist/client/index.html` → 0 after the build
 - [ ] Editor saves still validate with `renderMarkdown` before committing; conflicts never overwrite
+- [ ] Finance (`apps/finance`): every server function uses `requireEditor`; no real transactions, account names or amounts in tests, fixtures, logs or error messages (P019)
 - [ ] Tests cover new behaviour through public APIs and layers (no real network)
 - [ ] TanStack and Effect usage matches their skills (`pnpm exec intent load ...`, `node_modules/effect/AGENTS.md`)
 
