@@ -7,7 +7,7 @@
 
 The homepage is prerendered at build time and must stay incredibly lightweight.
 
-The agent implemented this as **zero JavaScript**: the route sets `headers: noJavaScript` and `src/server.ts` strips every script and module preload. The current page is about 0.6 KB of HTML plus 5 KB of CSS. The owner may revisit the zero-JS part, for example if they want an interactive component.
+The agent implemented this as **zero JavaScript**: the route sets `headers: noJavaScript` and `apps/home/src/server.ts` strips every script and module preload. The current page is about 0.6 KB of HTML plus 5 KB of CSS. The owner may revisit the zero-JS part, for example if they want an interactive component.
 
 ## Consequences
 

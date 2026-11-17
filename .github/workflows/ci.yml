@@ -24,15 +24,16 @@ jobs:
       - run: vp check
       - run: vp test
       - run: pnpm exec wrangler types --check
-      - run: vp build
+        working-directory: apps/home
+      - run: vp run -r build
       - name: Homepage ships no JavaScript
         run: |
-          if grep -q "<script" dist/client/index.html; then
-            echo "dist/client/index.html contains a <script> tag (decision 0005)."
+          if grep -q "<script" apps/home/dist/client/index.html; then
+            echo "apps/home/dist/client/index.html contains a <script> tag (decision 0005)."
             exit 1
           fi
 
-  # content/ holds the owner's own words (decision 0001). Owner edits go straight to main
+  # apps/*/content/ holds the owner's own words (decision 0001). Owner edits go straight to main
   # through the editor; a PR may only change content when the owner labels it.
   content-guard:
     if: github.event_name == 'pull_request'
@@ -46,7 +47,7 @@ jobs:
           BASE: ${{ github.event.pull_request.base.sha }}
           APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'content-approved') }}
         run: |
-          changed=$(git diff --name-only "$BASE"...HEAD -- content/)
+          changed=$(git diff --name-only "$BASE"...HEAD -- ':(glob)apps/*/content/**')
           if [ -n "$changed" ] && [ "$APPROVED" != "true" ]; then
             echo "This PR changes owner content without the 'content-approved' label:"
             echo "$changed"

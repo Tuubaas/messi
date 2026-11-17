@@ -10,16 +10,16 @@ Review the target diff (default: current branch vs `main`). Read the changed fil
 ## 1. Gates (run them; any failure is a finding)
 
 ```bash
-vp check && vp test && vp build
+vp check && vp test && vp run -r build
 ```
 
-`vp build` prerenders the homepage and fails on invalid content.
+The build prerenders the homepage and fails on invalid content.
 
 ## 2. Decision boundary (highest severity)
 
 Read `docs/decisions/README.md`. Flag any change that makes an owner decision without a recorded owner decision:
 
-- [ ] content or copy (`content/`, user-visible strings beyond plain UI labels)
+- [ ] content or copy (`apps/*/content/`, user-visible strings beyond plain UI labels)
 - [ ] visual design: colors, fonts, type scale, spacing system, imagery, animation (0006)
 - [ ] layout, UX or behaviour changes a visitor or the owner would notice
 - [ ] new route or page, new markdown component, new dependency
@@ -36,7 +36,7 @@ For every row in `docs/patterns.md` enforced by **review**, check the diff compl
 
 - [ ] Server functions: auth guard present and meaningful; inputs schema-validated; errors don't leak secrets
 - [ ] Secrets are read only via `runtime.server.ts`; nothing secret is in `wrangler.jsonc`, client code, or logs
-- [ ] Homepage still ships zero JS: `grep -c "<script" dist/client/index.html` → 0 after `vp build`
+- [ ] Homepage still ships zero JS: `grep -c "<script" apps/home/dist/client/index.html` → 0 after the build
 - [ ] Editor saves still validate with `renderMarkdown` before committing; conflicts never overwrite
 - [ ] Tests cover new behaviour through public APIs and layers (no real network)
 - [ ] TanStack and Effect usage matches their skills (`pnpm exec intent load ...`, `node_modules/effect/AGENTS.md`)

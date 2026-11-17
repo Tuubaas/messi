@@ -10,7 +10,7 @@ Read [docs/decisions/](docs/decisions/) before changing anything. Those decision
 | Implementation that follows existing decisions and lint rules: structure, naming, refactors, tests, bug fixes, patch/minor dependency updates, new lint rules | Content and copy, visual design, layout, UX and behaviour, new pages or routes, new markdown components, new dependencies, architecture, hosting, cost, auth, storage, analytics, anything public-facing |
 
 - When unsure, it is the owner's call. Use the `propose-decision` skill: lay out options, recommend one, and do not implement it until the owner chooses.
-- Never edit `content/`. That is the owner's own words, changed only through `/edit` or by the owner.
+- Never edit `apps/*/content/`. That is the owner's own words, changed only through `/edit` or by the owner.
 - Never invent a visual design. Design is explicitly pending (decision 0006).
 
 <!-- intent-skills:start -->
@@ -93,22 +93,25 @@ tanstackIntent:
 
 ## Map
 
-| Path               | What                                                                                                              |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `content/home.md`  | Homepage source. Owner only.                                                                                      |
-| `src/routes/`      | TanStack file routes. `/` is prerendered and ships no JavaScript; `/edit` is the editor.                          |
-| `src/content/`     | Markdown pipeline (`markdown.ts`), renderer (`Markdown.tsx`), component registry (`directives/`). Isomorphic.     |
-| `src/editor/`      | Editor UI and its server functions.                                                                               |
-| `src/server/`      | Effect services: `EditorAuth` (Cloudflare Access JWT), `ContentStore` (GitHub contents API), `runtime.server.ts`. |
-| `src/server.ts`    | Worker entry. Strips all JavaScript from pages whose route uses `headers: noJavaScript`.                          |
-| `lint/`            | Project oxlint rules (`messi.ts`) and their tests.                                                                |
-| `docs/decisions/`  | Owner decisions (binding). `proposed/` holds open questions for the owner.                                        |
-| `docs/patterns.md` | Every codified right/wrong pattern and what enforces it.                                                          |
-| `docs/setup.md`    | One-time Cloudflare, Access and GitHub setup.                                                                     |
+A pnpm workspace (decision 0009): apps in `apps/`, shared libraries in `packages/`, repo tooling in `tools/`. The root `vite.config.ts` owns lint, format, test and task settings for every package; each app's own `vite.config.ts` only builds that app.
+
+| Path                        | What                                                                                                              |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `apps/home/`                | The homepage app (`@messi/home`), a Cloudflare Worker.                                                            |
+| `apps/home/content/home.md` | Homepage source. Owner only.                                                                                      |
+| `apps/home/src/routes/`     | TanStack file routes. `/` is prerendered and ships no JavaScript; `/edit` is the editor.                          |
+| `apps/home/src/content/`    | Markdown pipeline (`markdown.ts`), renderer (`Markdown.tsx`), component registry (`directives/`). Isomorphic.     |
+| `apps/home/src/editor/`     | Editor UI and its server functions.                                                                               |
+| `apps/home/src/server/`     | Effect services: `EditorAuth` (Cloudflare Access JWT), `ContentStore` (GitHub contents API), `runtime.server.ts`. |
+| `apps/home/src/server.ts`   | Worker entry. Strips all JavaScript from pages whose route uses `headers: noJavaScript`.                          |
+| `tools/lint/`               | Project oxlint rules (`messi.ts`) and their tests (`@messi/lint`).                                                |
+| `docs/decisions/`           | Owner decisions (binding). `proposed/` holds open questions for the owner.                                        |
+| `docs/patterns.md`          | Every codified right/wrong pattern and what enforces it.                                                          |
+| `docs/setup.md`             | One-time Cloudflare, Access and GitHub setup.                                                                     |
 
 ## How saving works
 
-`/edit` (behind Cloudflare Access) → `saveHome` validates with the same pipeline the build uses → commits `content/home.md` through the GitHub API → the push to `main` runs `.github/workflows/deploy.yml` → prerender → Cloudflare. About 1–2 minutes.
+`/edit` (behind Cloudflare Access) → `saveHome` validates with the same pipeline the build uses → commits `apps/home/content/home.md` through the GitHub API → the push to `main` runs `.github/workflows/deploy.yml` → prerender → Cloudflare. About 1–2 minutes.
 
 ## Engineering rules
 
@@ -120,10 +123,11 @@ tanstackIntent:
 
 ## Workflow
 
-- `vp install`, then `vp check` (format, lint, types), `vp test`, `vp build` (prerenders; fails on invalid content).
+- From the repo root: `vp install`, then `vp check` (format, lint, types), `vp test` (every package), `vp run -r build` (prerenders; fails on invalid content). `vp run ready` runs all three.
+- One app: `vp -C apps/home <command>`, or `vp run @messi/home#<script>`. `vp run dev` starts the homepage.
 - Run the `review` skill on your diff before handing off.
 - Work on branches and open PRs. Never push to `main`: it is the owner's content channel and deploys on every push.
-- CI fails PRs that touch `content/` unless the owner labels them `content-approved`.
+- CI fails PRs that touch `apps/*/content/` unless the owner labels them `content-approved`.
 
 ## Repo skills (`.agents/skills/`, also at `.claude/skills/`)
 

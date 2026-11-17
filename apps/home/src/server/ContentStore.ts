@@ -3,7 +3,7 @@ import { Base64 } from "effect/encoding";
 import { FetchHttpClient, HttpClient, HttpClientRequest, HttpClientResponse } from "effect/http";
 
 /** Repository path of the homepage source. Git is the source of truth for content. */
-export const HOME_CONTENT_PATH = "content/home.md";
+export const HOME_CONTENT_PATH = "apps/home/content/home.md";
 
 export class ContentFile extends Schema.Class<ContentFile>("messi/server/ContentFile")({
   markdown: Schema.String,
