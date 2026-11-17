@@ -116,6 +116,8 @@ A pnpm workspace (decision 0009): apps in `apps/`, shared libraries in `packages
 
 `/edit` (behind Cloudflare Access) → `saveHome` validates with the same pipeline the build uses → commits `apps/home/content/home.md` through the GitHub API → the push to `main` runs `.github/workflows/deploy.yml` → prerender → Cloudflare. About 1–2 minutes.
 
+A push to `main` deploys only the apps it affects (decision 0009). `.github/deploy.json` lists the apps and the paths each is built from; keep it complete (P023).
+
 ## Tubas games (`apps/games`)
 
 A 5×5 quiz board played on one shared screen, with phones as buzzers (decisions 0010 and 0011). Visitors play published boards; the owner makes them in the admin.
@@ -170,7 +172,7 @@ The owner's private finance app (decision 0012): upload bank and card exports, h
 - From the repo root: `vp install`, then `vp check` (format, lint, types), `vp test` (every package), `vp run -r build` (prerenders; fails on invalid content). `vp run ready` runs all three.
 - One app: `vp -C apps/home <command>`, or `vp run @messi/home#<script>`. `vp run dev` starts the homepage, `vp run dev:games` starts Tubas games, `vp run dev:finance` starts the finance app.
 - Run the `review` skill on your diff before handing off.
-- Work on branches and open PRs. Never push to `main`: it is the owner's content channel and deploys on every push.
+- Work on branches and open PRs. Never push to `main`: it is the owner's content channel, and a push to it goes live.
 - CI fails PRs that touch `apps/*/content/` unless the owner labels them `content-approved`.
 
 ## Repo skills (`.agents/skills/`, also at `.claude/skills/`)
