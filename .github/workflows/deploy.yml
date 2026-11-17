@@ -1,33 +1,71 @@
 name: Deploy
 
-# Every push to main goes live. Content saves from /edit land here; aim for the shortest path.
-# Each app is its own Worker and deploys in its own job, so one never waits for another.
+# A push to main puts live the apps it affects (decision 0009). Content saves from /edit land
+# here; aim for the shortest path.
+#
+# The apps are not listed here but in .github/deploy.json: each app's folder name in apps/ with
+# the paths it is built from, and the paths shared by every app. A change outside those paths
+# never goes live, and nothing fails to say so: keep them complete (P023).
 on:
   push:
     branches: [main]
+  # By hand: deploys every app, whatever changed.
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: deploy
-  cancel-in-progress: true
-
 jobs:
-  deploy:
+  affected:
     # Skips until Cloudflare is set up (docs/setup.md), so early pushes don't fail.
     if: vars.CLOUDFLARE_ACCOUNT_ID != ''
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.affected.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          # The whole history, to have the commit this push started from.
+          fetch-depth: 0
+      - name: Find the apps this push affects
+        id: affected
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          # Nothing to compare with (a manual run, or a first or forced push): every app.
+          if ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            echo "apps=$(jq -c '.apps | keys' .github/deploy.json)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          affected=()
+          for app in $(jq -r '.apps | keys[]' .github/deploy.json); do
+            mapfile -t paths < <(jq -r --arg app "$app" '.shared[], .apps[$app][]' .github/deploy.json)
+            git diff --quiet "$BEFORE" HEAD -- "${paths[@]}" || affected+=("$app")
+          done
+          echo "apps=$(jq -cn '$ARGS.positional' --args "${affected[@]}")" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: affected
+    if: needs.affected.outputs.apps != '[]'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        app: [home, games, finance]
+        app: ${{ fromJSON(needs.affected.outputs.apps) }}
+    # One deploy per app at a time, and a newer one replaces it. Apps don't share a group, so a
+    # content save never cancels another app's deploy.
+    concurrency:
+      group: deploy-${{ matrix.app }}
+      cancel-in-progress: true
     defaults:
       run:
         working-directory: apps/${{ matrix.app }}
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          # The branch as it is now, not the commit that started this run: of two pushes close
+          # together, whichever job runs last still puts the newest one live.
+          ref: ${{ github.ref }}
       - uses: voidzero-dev/setup-vp@v1.22.0
         with:
           node-version: "24"

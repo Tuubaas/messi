@@ -1,0 +1,16 @@
+{
+  "shared": [
+    "packages",
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    ".npmrc",
+    ".github/deploy.json",
+    ".github/workflows/deploy.yml"
+  ],
+  "apps": {
+    "home": ["apps/home"],
+    "games": ["apps/games"],
+    "finance": ["apps/finance"]
+  }
+}
