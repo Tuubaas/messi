@@ -1,0 +1,145 @@
+/*
+ * The finance app has its own, deliberately quiet look (docs/decisions/0012-finance.md):
+ * neutral surfaces, the system font, one accent, and colour reserved for data. Light and
+ * dark follow the device. Decision 0006 (design pending) still holds for the homepage.
+ */
+@import "tailwindcss";
+
+@theme {
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Roles, not raw colours: the values swap with the colour scheme below. */
+  --color-plane: var(--plane);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-on-accent: #ffffff;
+  --color-wash: var(--wash);
+  --color-positive: var(--positive);
+  --color-danger: var(--danger);
+}
+
+:root {
+  color-scheme: light dark;
+
+  --plane: #f9f9f7;
+  --surface: #fcfcfb;
+  --sunken: #f1f0ec;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --line: #e1e0d9;
+  --line-strong: #c3c2b7;
+  --accent: #256abf;
+  --accent-ink: #1c5cab;
+  --wash: rgb(11 11 11 / 0.05);
+  --positive: #006300;
+  --danger: #b42a2a;
+
+  /*
+   * Chart colours: a fixed order of eight hues, checked for colour-blind separation in
+   * both modes (the order is what makes neighbours tell apart; don't shuffle or add).
+   * A ninth series is never a ninth colour: it folds into "Other".
+   */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #6250d6;
+  --series-8: #e34948;
+  --series-other: #a3a29b;
+  --series-negative: #e34948;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --plane: #0d0d0d;
+    --surface: #1a1a19;
+    --sunken: #131312;
+    --ink: #f0efec;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --line: #2c2c2a;
+    --line-strong: #383835;
+    --accent: #3987e5;
+    --accent-ink: #6da7ec;
+    --wash: rgb(255 255 255 / 0.07);
+    --positive: #0ca30c;
+    --danger: #e66767;
+
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #0ca30c;
+    --series-7: #9085e9;
+    --series-8: #e66767;
+    --series-other: #6e6d68;
+    --series-negative: #e66767;
+  }
+}
+
+@layer base {
+  html {
+    background: var(--plane);
+    color: var(--ink);
+    font-size: 15px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100dvh;
+    line-height: 1.45;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 25%, transparent);
+  }
+
+  dialog {
+    color: inherit;
+  }
+
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.45);
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Chart text wears text colours, never the series colour. */
+.recharts-cartesian-axis-tick-value {
+  fill: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.recharts-wrapper:focus,
+.recharts-surface:focus {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

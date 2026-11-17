@@ -27,6 +27,8 @@ jobs:
         working-directory: apps/home
       - run: pnpm exec wrangler types --check
         working-directory: apps/games
+      - run: pnpm exec wrangler types --check
+        working-directory: apps/finance
       - run: vp run -r build
       - name: Homepage ships no JavaScript
         run: |

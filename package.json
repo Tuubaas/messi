@@ -5,7 +5,8 @@
   "scripts": {
     "ready": "vp check && vp test && vp run -r build",
     "dev": "vp run @messi/home#dev",
-    "dev:games": "vp run @messi/games#dev"
+    "dev:games": "vp run @messi/games#dev",
+    "dev:finance": "vp run @messi/finance#dev"
   },
   "devDependencies": {
     "@tanstack/intent": "^0.5.6",

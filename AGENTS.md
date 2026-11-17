@@ -11,7 +11,7 @@ Read [docs/decisions/](docs/decisions/) before changing anything. Those decision
 
 - When unsure, it is the owner's call. Use the `propose-decision` skill: lay out options, recommend one, and do not implement it until the owner chooses.
 - Never edit `apps/*/content/`. That is the owner's own words, changed only through `/edit` or by the owner.
-- Never invent a visual design for the homepage. Its design is explicitly pending (decision 0006). Tubas games has a decided design (0010): extend it with the tokens in `apps/games/src/styles.css`, don't start a new one.
+- Never invent a visual design for the homepage. Its design is explicitly pending (decision 0006). Tubas games has a decided design (0010): extend it with the tokens in `apps/games/src/styles.css`, don't start a new one. The finance app has its own too (0012), with tokens in `apps/finance/src/styles.css`.
 
 <!-- intent-skills:start -->
 
@@ -105,7 +105,8 @@ A pnpm workspace (decision 0009): apps in `apps/`, shared libraries in `packages
 | `apps/home/src/server/`     | Effect services: `ContentStore` (GitHub contents API), `requireEditor`, `runtime.server.ts`.                         |
 | `apps/home/src/server.ts`   | Worker entry. Strips all JavaScript from pages whose route uses `headers: noJavaScript`.                             |
 | `apps/games/`               | Tubas games (`@messi/games`), a quiz-board game on its own Worker with a D1 database and Durable Objects. See below. |
-| `packages/access/`          | `EditorAuth` (`@messi/access`): the Cloudflare Access check both apps put in front of their editing functions.       |
+| `apps/finance/`             | Finance (`@messi/finance`), a private personal finance app on its own Worker with a D1 database. See below.          |
+| `packages/access/`          | `EditorAuth` (`@messi/access`): the Cloudflare Access check the apps put in front of their private functions.        |
 | `tools/lint/`               | Project oxlint rules (`messi.ts`) and their tests (`@messi/lint`).                                                   |
 | `docs/decisions/`           | Owner decisions (binding). `proposed/` holds open questions for the owner.                                           |
 | `docs/patterns.md`          | Every codified right/wrong pattern and what enforces it.                                                             |
@@ -137,6 +138,25 @@ A 5×5 quiz board played on one shared screen, with phones as buzzers (decisions
 - Buzzing is ordered by press time, not arrival (0011, P016). Change the rules only in `src/buzzer/room.ts`, with a test.
 - To try buzzers locally, start a game, then open `http://localhost:3001/join` in other browser windows.
 
+## Finance (`apps/finance`)
+
+The owner's private finance app (decision 0012): upload bank and card exports, have them categorised by rules, look at the money in saved views. Everything is behind a sign-in.
+
+| Path                                                              | What                                                                                                                                                                                                  |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/routes/`                                                     | `/` overview of views, `/views/new` and `/views/$viewId` editor, `/transactions`, `/import`, `/settings`. Filters live in search params.                                                              |
+| `src/domain/`                                                     | Everything that needs no server or React: `model.ts` (Effect Schema), `csv.ts` (reading a bank export), `aggregate.ts` (what a view shows), `matching.ts` (rules), `dates.ts`, `money.ts`, `wire.ts`. |
+| `src/api/functions.ts`                                            | Every server function. None is public: all use `requireEditor`. `queries.ts` is what the browser caches (TanStack Query), one calendar year of transactions per query.                                |
+| `src/server/`                                                     | `Ledger` (all storage, `effect/sql` on D1; tested on in-memory SQLite), `migrations.ts` (the schema, as repeatable steps), `runtime.server.ts`.                                                       |
+| `src/views/`                                                      | Views: `charts.tsx` (Recharts), `series.ts` (which colour a series gets), the card and the editor.                                                                                                    |
+| `src/transactions/`, `src/import/`, `src/rules/`, `src/settings/` | The other screens.                                                                                                                                                                                    |
+| `src/ui/`, `src/styles.css`                                       | The design: tokens (including the chart palette), controls, dialog, notices.                                                                                                                          |
+
+- `vp run dev:finance` starts it on http://localhost:3002 with a local database (in `apps/finance/.wrangler/`), no sign-in, and no data.
+- **No real financial data anywhere in the repo**: tests and fixtures use made-up transactions, and errors or logs never quote stored data (P019). The repo is public.
+- Money is whole minor units. Negative is money out. The browser does the arithmetic (`aggregate.ts`); the Worker stays within 10 ms of CPU by passing JSON text through (`Ledger.transactionsJson`).
+- D1 has no transactions and tight per-request limits: migrations are repeatable statements (P017), many values travel as one JSON parameter, and rules are applied by one scoped `UPDATE` (P018).
+
 ## Engineering rules
 
 - Use TanStack features before writing your own. Load the matching Intent skill above before touching TanStack code.
@@ -148,7 +168,7 @@ A 5×5 quiz board played on one shared screen, with phones as buzzers (decisions
 ## Workflow
 
 - From the repo root: `vp install`, then `vp check` (format, lint, types), `vp test` (every package), `vp run -r build` (prerenders; fails on invalid content). `vp run ready` runs all three.
-- One app: `vp -C apps/home <command>`, or `vp run @messi/home#<script>`. `vp run dev` starts the homepage, `vp run dev:games` starts Tubas games.
+- One app: `vp -C apps/home <command>`, or `vp run @messi/home#<script>`. `vp run dev` starts the homepage, `vp run dev:games` starts Tubas games, `vp run dev:finance` starts the finance app.
 - Run the `review` skill on your diff before handing off.
 - Work on branches and open PRs. Never push to `main`: it is the owner's content channel and deploys on every push.
 - CI fails PRs that touch `apps/*/content/` unless the owner labels them `content-approved`.
