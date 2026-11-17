@@ -2,7 +2,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Effect, Result } from "effect";
 import { useDeferredValue, useMemo, useState } from "react";
 import { Markdown } from "#/content/Markdown";
-import { renderMarkdown } from "#/content/markdown";
+import { renderMarkdown } from "#/content/pipeline";
 import { type SaveHomeResult, saveHome } from "./functions";
 
 type SaveState =

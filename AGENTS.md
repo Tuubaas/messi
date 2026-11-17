@@ -100,7 +100,7 @@ A pnpm workspace (decision 0009): apps in `apps/`, shared libraries in `packages
 | `apps/home/`                | The homepage app (`@messi/home`), a Cloudflare Worker.                                                            |
 | `apps/home/content/home.md` | Homepage source. Owner only.                                                                                      |
 | `apps/home/src/routes/`     | TanStack file routes. `/` is prerendered and ships no JavaScript; `/edit` is the editor.                          |
-| `apps/home/src/content/`    | Markdown pipeline (`markdown.ts`), renderer (`Markdown.tsx`), component registry (`directives/`). Isomorphic.     |
+| `apps/home/src/content/`    | Markdown pipeline (`pipeline.ts`), renderer (`Markdown.tsx`), component registry (`directives/`). Isomorphic.     |
 | `apps/home/src/editor/`     | Editor UI and its server functions.                                                                               |
 | `apps/home/src/server/`     | Effect services: `EditorAuth` (Cloudflare Access JWT), `ContentStore` (GitHub contents API), `runtime.server.ts`. |
 | `apps/home/src/server.ts`   | Worker entry. Strips all JavaScript from pages whose route uses `headers: noJavaScript`.                          |
