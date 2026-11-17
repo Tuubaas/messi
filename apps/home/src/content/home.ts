@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { Effect } from "effect";
 import homeMarkdown from "../../content/home.md?raw";
-import { renderMarkdown } from "./markdown";
+import { renderMarkdown } from "./pipeline";
 
 // public-server-fn: serves the committed homepage content; runs at build time.
 export const getHomePage = createServerFn({ method: "GET" }).handler(() =>

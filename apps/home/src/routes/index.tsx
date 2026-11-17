@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Effect } from "effect";
 import { getHomePage } from "#/content/home";
 import { Markdown } from "#/content/Markdown";
-import { renderMarkdown } from "#/content/markdown";
+import { renderMarkdown } from "#/content/pipeline";
 import { noJavaScript } from "#/noJavaScript";
 
 export const Route = createFileRoute("/")({

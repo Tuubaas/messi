@@ -2,7 +2,7 @@ import { Effect, Exit } from "effect";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vite-plus/test";
 import { Markdown } from "./Markdown";
-import { ContentInvalid, renderMarkdown } from "./markdown";
+import { ContentInvalid, renderMarkdown } from "./pipeline";
 
 const render = (markdown: string) => Effect.runSync(renderMarkdown(markdown));
 const html = (markdown: string) => renderToStaticMarkup(<Markdown tree={render(markdown).tree} />);

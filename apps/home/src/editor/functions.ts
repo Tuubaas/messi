@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { Effect, Schema } from "effect";
-import { renderMarkdown } from "#/content/markdown";
+import { renderMarkdown } from "#/content/pipeline";
 import { ContentStore } from "#/server/ContentStore";
 import { requireEditor } from "#/server/requireEditor";
 import { runServer } from "#/server/runtime.server";
