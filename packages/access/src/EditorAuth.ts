@@ -3,7 +3,7 @@ import { SecureRandom, Signature } from "effect/crypto";
 import { Cookies, FetchHttpClient } from "effect/http";
 import { Jwks, Jwt } from "effect/jose";
 
-export class Editor extends Schema.Class<Editor>("messi/server/Editor")({
+export class Editor extends Schema.Class<Editor>("messi/access/Editor")({
   email: Schema.String,
 }) {}
 
@@ -29,18 +29,28 @@ const accessToken = (request: Request) =>
       Cookies.parseHeader(request.headers.get("cookie") ?? "")["CF_Authorization"],
   );
 
-/** Decides who may use the editor. Every editor server function must go through it. */
+/**
+ * Decides who may edit. Every editing server function must go through it.
+ * Shared by every app that sits behind Cloudflare Access.
+ */
 export class EditorAuth extends Context.Service<
   EditorAuth,
   {
     authenticate(request: Request): Effect.Effect<Editor, NotEditor>;
   }
->()("messi/server/EditorAuth") {
+>()("messi/access/EditorAuth") {
   /** Local development only: there is no Access in front of `vp dev`. */
   static readonly development = Layer.succeed(
     EditorAuth,
     EditorAuth.of({ authenticate: () => Effect.succeed(new Editor({ email: "dev@localhost" })) }),
   );
+
+  /** Lets nobody in. For a deployment whose Access settings are missing: reading still works. */
+  static readonly locked = (reason: string) =>
+    Layer.succeed(
+      EditorAuth,
+      EditorAuth.of({ authenticate: () => Effect.fail(new NotEditor({ reason })) }),
+    );
 
   /** Verifies a Cloudflare Access JWT using a key set already in context. */
   static readonly makeCloudflareAccess = Effect.fnUntraced(function* (config: AccessConfig) {

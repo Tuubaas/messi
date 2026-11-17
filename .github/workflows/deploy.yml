@@ -1,6 +1,7 @@
 name: Deploy
 
 # Every push to main goes live. Content saves from /edit land here; aim for the shortest path.
+# Each app is its own Worker and deploys in its own job, so one never waits for another.
 on:
   push:
     branches: [main]
@@ -18,16 +19,21 @@ jobs:
     # Skips until Cloudflare is set up (docs/setup.md), so early pushes don't fail.
     if: vars.CLOUDFLARE_ACCOUNT_ID != ''
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [home, games]
     defaults:
       run:
-        working-directory: apps/home
+        working-directory: apps/${{ matrix.app }}
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: voidzero-dev/setup-vp@v1.22.0
         with:
           node-version: "24"
           cache: true
-      # Prerendering validates content: invalid markdown fails here and the live site stays as it was.
+      # For the homepage, prerendering validates content: invalid markdown fails here and the
+      # live site stays as it was.
       - run: vp build
       - run: pnpm exec wrangler deploy
         env:

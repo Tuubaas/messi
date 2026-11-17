@@ -25,6 +25,8 @@ jobs:
       - run: vp test
       - run: pnpm exec wrangler types --check
         working-directory: apps/home
+      - run: pnpm exec wrangler types --check
+        working-directory: apps/games
       - run: vp run -r build
       - name: Homepage ships no JavaScript
         run: |

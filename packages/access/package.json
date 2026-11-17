@@ -1,0 +1,17 @@
+{
+  "name": "@messi/access",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/EditorAuth.ts"
+  },
+  "scripts": {
+    "test": "vp test"
+  },
+  "dependencies": {
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "vite-plus": "catalog:"
+  }
+}

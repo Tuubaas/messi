@@ -1,0 +1,487 @@
+/*
+ * Tubas games has its own look (docs/decisions/0010-tubas-games.md): a dark stage in plum,
+ * brass for the brand and the points, and one bright colour per team. Colour always means
+ * a team, so the board fills up with the colours of whoever won each clue.
+ */
+@import "tailwindcss";
+@import "@fontsource-variable/bricolage-grotesque/wdth.css";
+
+@theme {
+  --font-sans: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink-950: oklch(0.125 0.022 312);
+  --color-ink-900: oklch(0.16 0.03 312);
+  --color-ink-850: oklch(0.19 0.035 312);
+  --color-ink-800: oklch(0.225 0.04 312);
+  --color-ink-700: oklch(0.285 0.047 312);
+  --color-ink-600: oklch(0.37 0.05 312);
+  --color-ink-500: oklch(0.5 0.045 312);
+  --color-ink-400: oklch(0.65 0.04 312);
+  --color-ink-300: oklch(0.77 0.03 312);
+  --color-ink-200: oklch(0.87 0.02 312);
+  --color-cream: oklch(0.97 0.018 92);
+
+  --color-brass-200: oklch(0.93 0.07 95);
+  --color-brass-300: oklch(0.88 0.115 92);
+  --color-brass-400: oklch(0.83 0.14 88);
+  --color-brass-500: oklch(0.76 0.14 80);
+  --color-brass-600: oklch(0.64 0.125 72);
+  --color-brass-700: oklch(0.5 0.1 66);
+
+  --color-team-coral: oklch(0.72 0.18 30);
+  --color-team-sky: oklch(0.75 0.14 240);
+  --color-team-lime: oklch(0.85 0.19 130);
+  --color-team-pink: oklch(0.75 0.17 350);
+  --color-team-teal: oklch(0.81 0.12 190);
+  --color-team-violet: oklch(0.71 0.16 295);
+
+  --color-good: oklch(0.82 0.17 150);
+  --color-bad: oklch(0.7 0.19 25);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-rise: rise 0.5s var(--ease-out-expo) both;
+  --animate-pop: pop 0.45s var(--ease-spring) both;
+  --animate-float-up: float-up 1.4s var(--ease-out-expo) both;
+  --animate-fade: fade 0.3s ease-out both;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.6em);
+    }
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+  }
+  @keyframes float-up {
+    0% {
+      opacity: 0;
+      transform: translateY(35%) scale(0.8);
+    }
+    18% {
+      opacity: 1;
+      transform: translateY(0) scale(1.1);
+    }
+    30% {
+      transform: translateY(0) scale(1);
+    }
+    75% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-35%);
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-ink-950);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--color-ink-950);
+    color: var(--color-cream);
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: oklch(0.83 0.14 88 / 0.35);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brass-400);
+    outline-offset: 2px;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  dialog {
+    color: inherit;
+  }
+}
+
+/* One colour per team. Elements inside read it as `var(--team)`. */
+.team-coral {
+  --team: var(--color-team-coral);
+}
+.team-sky {
+  --team: var(--color-team-sky);
+}
+.team-lime {
+  --team: var(--color-team-lime);
+}
+.team-pink {
+  --team: var(--color-team-pink);
+}
+.team-teal {
+  --team: var(--color-team-teal);
+}
+.team-violet {
+  --team: var(--color-team-violet);
+}
+
+/* A phone held sideways: wide but with very little height. */
+@custom-variant squat (@media (orientation: landscape) and (max-height: 520px));
+
+@utility condensed {
+  font-stretch: 80%;
+}
+
+@utility semi-condensed {
+  font-stretch: 90%;
+}
+
+/* Small caps label above a heading or a field. */
+@utility eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-brass-400);
+}
+
+/* Points and other headline numbers: brass, as if stamped. */
+@utility brass-text {
+  background: linear-gradient(180deg, var(--color-brass-200), var(--color-brass-500) 85%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@layer components {
+  /* The room every screen sits in: a warm light from above, a little colour in the corners. */
+  .stage {
+    background:
+      radial-gradient(70rem 32rem at 50% -12rem, oklch(0.76 0.14 80 / 0.16), transparent 70%),
+      radial-gradient(46rem 30rem at 105% 105%, oklch(0.55 0.19 340 / 0.13), transparent 70%),
+      radial-gradient(40rem 28rem at -5% 100%, oklch(0.55 0.15 265 / 0.1), transparent 70%),
+      var(--color-ink-950);
+    background-attachment: fixed;
+  }
+
+  .surface {
+    background: linear-gradient(170deg, var(--color-ink-800), var(--color-ink-850));
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.07),
+      0 0 0 1px oklch(1 0 0 / 0.06),
+      0 20px 40px -24px oklch(0 0 0 / 0.7);
+  }
+
+  /* A clue on the board. */
+  .tile {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 0;
+    border-radius: clamp(8px, 1.1vw, 18px);
+    background: linear-gradient(165deg, var(--color-ink-700), var(--color-ink-800) 70%);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.1),
+      inset 0 -3px 0 oklch(0 0 0 / 0.28),
+      0 1px 2px oklch(0 0 0 / 0.5);
+    transition:
+      transform 0.2s var(--ease-out-expo),
+      box-shadow 0.2s ease,
+      background-color 0.2s ease,
+      filter 0.2s ease;
+  }
+
+  .tile:not(:disabled):hover,
+  .tile:not(:disabled):focus-visible {
+    transform: translateY(-3px) scale(1.015);
+    filter: brightness(1.14);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.16),
+      inset 0 -3px 0 oklch(0 0 0 / 0.28),
+      0 0 0 2px var(--color-brass-400),
+      0 14px 30px -10px oklch(0.76 0.14 80 / 0.45);
+  }
+
+  .tile:not(:disabled):active {
+    transform: translateY(0) scale(0.985);
+  }
+
+  /* Played: the tile sinks into the board and takes the winner's colour. */
+  .tile[data-state="played"] {
+    background: color-mix(in oklab, var(--team, var(--color-ink-900)) 16%, var(--color-ink-900));
+    box-shadow:
+      inset 0 2px 6px oklch(0 0 0 / 0.45),
+      inset 0 0 0 1px color-mix(in oklab, var(--team, oklch(1 0 0 / 0.5)) 30%, transparent);
+  }
+
+  .tile[data-state="empty"] {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.05);
+  }
+
+  /* The open clue. */
+  .clue-card {
+    background:
+      radial-gradient(90% 70% at 50% 0%, oklch(0.76 0.14 80 / 0.16), transparent 70%),
+      linear-gradient(170deg, var(--color-ink-700), var(--color-ink-850) 75%);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.14),
+      0 0 0 1px oklch(0.83 0.14 88 / 0.45),
+      0 40px 80px -30px oklch(0 0 0 / 0.9);
+    view-transition-name: clue;
+  }
+
+  /* The card's edge is the players' starting signal, so it switches fast and unmistakably. */
+  .clue-card[data-buzzers] {
+    transition: box-shadow 0.08s linear;
+  }
+
+  .clue-card[data-buzzers="locked"] {
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.14),
+      0 0 0 1px oklch(1 0 0 / 0.16),
+      0 40px 80px -30px oklch(0 0 0 / 0.9);
+  }
+
+  .clue-card[data-buzzers="open"] {
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.14),
+      0 0 0 4px var(--color-brass-400),
+      0 0 80px -4px oklch(0.83 0.14 88 / 0.6),
+      0 40px 80px -30px oklch(0 0 0 / 0.9);
+  }
+
+  .clue-card[data-buzzers="answering"] {
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.14),
+      0 0 0 4px var(--team),
+      0 0 80px -4px var(--team),
+      0 40px 80px -30px oklch(0 0 0 / 0.9);
+  }
+
+  /* The button on a player's phone. `--tone` is its colour; `data-mood` what it is doing. */
+  .buzzer {
+    --tone: var(--team, var(--color-ink-500));
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: 9999px;
+    color: var(--color-ink-950);
+    background: radial-gradient(
+      circle at 34% 26%,
+      color-mix(in oklab, var(--tone) 62%, white),
+      var(--tone) 52%,
+      color-mix(in oklab, var(--tone) 72%, black)
+    );
+    box-shadow:
+      inset 0 -0.6rem 0 oklch(0 0 0 / 0.2),
+      inset 0 0.35rem 0 oklch(1 0 0 / 0.3),
+      0 0.9rem 0 color-mix(in oklab, var(--tone) 42%, black),
+      0 2rem 4rem -0.5rem color-mix(in oklab, var(--tone) 55%, transparent);
+    transition:
+      transform 0.05s ease-out,
+      box-shadow 0.05s ease-out,
+      filter 0.25s ease,
+      opacity 0.25s ease;
+    /* A press must be a press: no scrolling, zooming, selecting or long-press menus. */
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  .buzzer:active,
+  .buzzer[data-mood="sent"],
+  .buzzer[data-mood="you"] {
+    transform: translateY(0.7rem);
+    box-shadow:
+      inset 0 -0.3rem 0 oklch(0 0 0 / 0.2),
+      inset 0 0.35rem 0 oklch(1 0 0 / 0.3),
+      0 0.2rem 0 color-mix(in oklab, var(--tone) 42%, black),
+      0 1rem 2rem -0.5rem color-mix(in oklab, var(--tone) 55%, transparent);
+  }
+
+  .buzzer[data-mood="ready"] {
+    animation: buzzer-glow 1.4s ease-in-out infinite;
+  }
+
+  .buzzer[data-mood="wait"] {
+    filter: saturate(0.55) brightness(0.62);
+  }
+
+  .buzzer[data-mood="idle"],
+  .buzzer[data-mood="out"],
+  .buzzer[data-mood="ended"] {
+    filter: saturate(0.2) brightness(0.42);
+  }
+
+  /* Someone else has the floor: the button wears their colour, and sits back. */
+  .buzzer[data-mood="rival"],
+  .buzzer[data-mood="teammate"] {
+    filter: saturate(0.85) brightness(0.72);
+  }
+
+  .buzzer[data-mood="foul"] {
+    --tone: var(--color-bad);
+    animation: shake 0.3s ease-in-out;
+  }
+
+  @keyframes buzzer-glow {
+    50% {
+      filter: brightness(1.12)
+        drop-shadow(0 0 2.5rem color-mix(in oklab, var(--tone) 70%, transparent));
+    }
+  }
+
+  @keyframes shake {
+    25% {
+      translate: -0.5rem 0;
+    }
+    75% {
+      translate: 0.5rem 0;
+    }
+  }
+
+  .team-token {
+    display: grid;
+    place-items: center;
+    flex: none;
+    aspect-ratio: 1;
+    border-radius: 9999px;
+    background: var(--team);
+    color: var(--color-ink-950);
+    font-weight: 800;
+    line-height: 1;
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.35),
+      inset 0 -2px 0 oklch(0 0 0 / 0.18);
+  }
+
+  .field {
+    width: 100%;
+    border-radius: 0.75rem;
+    background: var(--color-ink-900);
+    box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.09);
+    transition: box-shadow 0.15s ease;
+  }
+
+  .field::placeholder {
+    color: var(--color-ink-500);
+  }
+
+  .field:hover {
+    box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.18);
+  }
+
+  .field:focus-visible {
+    outline: none;
+    box-shadow:
+      inset 0 0 0 1px var(--color-brass-400),
+      0 0 0 3px oklch(0.83 0.14 88 / 0.22);
+  }
+
+  .dialog {
+    margin: auto;
+    width: min(100% - 2rem, var(--dialog-width, 28rem));
+    max-height: min(100dvh - 2rem, 44rem);
+    overflow: auto;
+    border-radius: 1.5rem;
+    background: linear-gradient(170deg, var(--color-ink-800), var(--color-ink-850));
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.08),
+      0 0 0 1px oklch(1 0 0 / 0.1),
+      0 40px 80px -20px oklch(0 0 0 / 0.8);
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+    transition:
+      opacity 0.2s ease,
+      transform 0.3s var(--ease-out-expo),
+      overlay 0.3s allow-discrete,
+      display 0.3s allow-discrete;
+  }
+
+  .dialog[open] {
+    opacity: 1;
+    transform: none;
+  }
+
+  @starting-style {
+    .dialog[open] {
+      opacity: 0;
+      transform: translateY(12px) scale(0.97);
+    }
+  }
+
+  .dialog::backdrop {
+    background: oklch(0.1 0.02 312 / 0);
+    backdrop-filter: blur(0);
+    transition:
+      background-color 0.3s ease,
+      backdrop-filter 0.3s ease,
+      overlay 0.3s allow-discrete,
+      display 0.3s allow-discrete;
+  }
+
+  .dialog[open]::backdrop {
+    background: oklch(0.1 0.02 312 / 0.7);
+    backdrop-filter: blur(6px);
+  }
+
+  @starting-style {
+    .dialog[open]::backdrop {
+      background: oklch(0.1 0.02 312 / 0);
+      backdrop-filter: blur(0);
+    }
+  }
+}
+
+/* The tile grows into the clue card and back (browsers without view transitions just cut). */
+::view-transition-group(clue) {
+  animation-duration: 0.5s;
+  animation-timing-function: var(--ease-out-expo);
+}
+
+::view-transition-old(clue),
+::view-transition-new(clue) {
+  height: 100%;
+  animation-duration: 0.25s;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
