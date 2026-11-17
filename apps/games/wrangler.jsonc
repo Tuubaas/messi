@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tubas-games",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/server.ts",
+  // Boards live in D1. No database_id on purpose: `wrangler deploy` creates the database
+  // the first time and reuses it afterwards; `vp dev` uses a local copy in .wrangler/.
+  "d1_databases": [{ "binding": "DB", "database_name": "tubas-games" }],
+  // One Durable Object per game in progress: the room that phones connect to as buzzers.
+  // SQLite-backed, which is the kind the free plan includes.
+  "durable_objects": { "bindings": [{ "name": "ROOMS", "class_name": "BuzzerRoom" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BuzzerRoom"] }],
+}

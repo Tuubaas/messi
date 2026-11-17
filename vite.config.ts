@@ -35,7 +35,7 @@ const config = defineConfig({
   },
   // `vp test` at the root runs every package's tests with that package's own config.
   test: {
-    projects: ["apps/*", "tools/*"],
+    projects: ["apps/*", "packages/*", "tools/*"],
   },
   run: {
     cache: true,

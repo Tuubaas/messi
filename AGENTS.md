@@ -1,4 +1,4 @@
-# messi: the owner's personal website
+# messi: the owner's personal website and apps
 
 This site represents its owner. **The owner makes every product decision; agents implement them.**
 Read [docs/decisions/](docs/decisions/) before changing anything. Those decisions are binding.
@@ -11,7 +11,7 @@ Read [docs/decisions/](docs/decisions/) before changing anything. Those decision
 
 - When unsure, it is the owner's call. Use the `propose-decision` skill: lay out options, recommend one, and do not implement it until the owner chooses.
 - Never edit `apps/*/content/`. That is the owner's own words, changed only through `/edit` or by the owner.
-- Never invent a visual design. Design is explicitly pending (decision 0006).
+- Never invent a visual design for the homepage. Its design is explicitly pending (decision 0006). Tubas games has a decided design (0010): extend it with the tokens in `apps/games/src/styles.css`, don't start a new one.
 
 <!-- intent-skills:start -->
 
@@ -95,23 +95,47 @@ tanstackIntent:
 
 A pnpm workspace (decision 0009): apps in `apps/`, shared libraries in `packages/`, repo tooling in `tools/`. The root `vite.config.ts` owns lint, format, test and task settings for every package; each app's own `vite.config.ts` only builds that app.
 
-| Path                        | What                                                                                                              |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `apps/home/`                | The homepage app (`@messi/home`), a Cloudflare Worker.                                                            |
-| `apps/home/content/home.md` | Homepage source. Owner only.                                                                                      |
-| `apps/home/src/routes/`     | TanStack file routes. `/` is prerendered and ships no JavaScript; `/edit` is the editor.                          |
-| `apps/home/src/content/`    | Markdown pipeline (`pipeline.ts`), renderer (`Markdown.tsx`), component registry (`directives/`). Isomorphic.     |
-| `apps/home/src/editor/`     | Editor UI and its server functions.                                                                               |
-| `apps/home/src/server/`     | Effect services: `EditorAuth` (Cloudflare Access JWT), `ContentStore` (GitHub contents API), `runtime.server.ts`. |
-| `apps/home/src/server.ts`   | Worker entry. Strips all JavaScript from pages whose route uses `headers: noJavaScript`.                          |
-| `tools/lint/`               | Project oxlint rules (`messi.ts`) and their tests (`@messi/lint`).                                                |
-| `docs/decisions/`           | Owner decisions (binding). `proposed/` holds open questions for the owner.                                        |
-| `docs/patterns.md`          | Every codified right/wrong pattern and what enforces it.                                                          |
-| `docs/setup.md`             | One-time Cloudflare, Access and GitHub setup.                                                                     |
+| Path                        | What                                                                                                                 |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `apps/home/`                | The homepage app (`@messi/home`), a Cloudflare Worker.                                                               |
+| `apps/home/content/home.md` | Homepage source. Owner only.                                                                                         |
+| `apps/home/src/routes/`     | TanStack file routes. `/` is prerendered and ships no JavaScript; `/edit` is the editor.                             |
+| `apps/home/src/content/`    | Markdown pipeline (`pipeline.ts`), renderer (`Markdown.tsx`), component registry (`directives/`). Isomorphic.        |
+| `apps/home/src/editor/`     | Editor UI and its server functions.                                                                                  |
+| `apps/home/src/server/`     | Effect services: `ContentStore` (GitHub contents API), `requireEditor`, `runtime.server.ts`.                         |
+| `apps/home/src/server.ts`   | Worker entry. Strips all JavaScript from pages whose route uses `headers: noJavaScript`.                             |
+| `apps/games/`               | Tubas games (`@messi/games`), a quiz-board game on its own Worker with a D1 database and Durable Objects. See below. |
+| `packages/access/`          | `EditorAuth` (`@messi/access`): the Cloudflare Access check both apps put in front of their editing functions.       |
+| `tools/lint/`               | Project oxlint rules (`messi.ts`) and their tests (`@messi/lint`).                                                   |
+| `docs/decisions/`           | Owner decisions (binding). `proposed/` holds open questions for the owner.                                           |
+| `docs/patterns.md`          | Every codified right/wrong pattern and what enforces it.                                                             |
+| `docs/setup.md`             | One-time Cloudflare, Access and GitHub setup.                                                                        |
 
 ## How saving works
 
 `/edit` (behind Cloudflare Access) → `saveHome` validates with the same pipeline the build uses → commits `apps/home/content/home.md` through the GitHub API → the push to `main` runs `.github/workflows/deploy.yml` → prerender → Cloudflare. About 1–2 minutes.
+
+## Tubas games (`apps/games`)
+
+A 5×5 quiz board played on one shared screen, with phones as buzzers (decisions 0010 and 0011). Visitors play published boards; the owner makes them in the admin.
+
+| Path                        | What                                                                                                                                                                                                                                                |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/routes/`               | `/` lists published boards, `/play/$boardId` plays one, `/join` and `/join/$code` are a player's phone, `/admin` and `/admin/$boardId` manage and edit boards.                                                                                      |
+| `src/game/`                 | The rules, with no React or server code: `board.ts` (shape, progress), `game.ts` (a game's state and every move), `schema.ts` (Effect Schema, server side only).                                                                                    |
+| `src/play/`                 | The play view (the host's screen). A game is saved in the browser's `localStorage` (`storage.ts`), never on the server. `useBuzzers.ts` runs the buzzer room from here.                                                                             |
+| `src/buzzer/`               | Buzzers, with no React: `room.ts` (the room's rules, incl. who buzzed first), `clock.ts` (clock sync), `host.ts` and `player.ts` (what each side derives), `socket.ts` (the browser's connection), `messages.ts` (Effect Schema, server side only). |
+| `src/join/`                 | The player's phone: code entry, picking a team, the buzzer with the open clue above it.                                                                                                                                                             |
+| `src/admin/`                | Board list and editor. `useBoardEditor.ts` saves by itself, one save at a time, by revision.                                                                                                                                                        |
+| `src/boards/functions.ts`   | Every server function. Two are public (list published, load a board to play); the rest use `requireEditor`.                                                                                                                                         |
+| `src/server/`               | `BoardStore` (D1 through a small SQL interface; in-memory for tests), `boards.ts` (what the functions do), `runtime.server.ts`, `BuzzerRoom.ts` (the Durable Object: one per game).                                                                 |
+| `src/server.ts`             | Worker entry. Sends `/rooms/<code>/socket` to that game's `BuzzerRoom`; everything else to TanStack Start.                                                                                                                                          |
+| `src/ui/`, `src/styles.css` | The design: tokens, buttons, dialog, icons, logo.                                                                                                                                                                                                   |
+
+- `vp run dev:games` starts it on http://localhost:3001 with a local database (in `apps/games/.wrangler/`), no sign-in, and a sample board.
+- A board has drafts and a published state. A public server function must never reveal a draft (P014).
+- Buzzing is ordered by press time, not arrival (0011, P016). Change the rules only in `src/buzzer/room.ts`, with a test.
+- To try buzzers locally, start a game, then open `http://localhost:3001/join` in other browser windows.
 
 ## Engineering rules
 
@@ -124,7 +148,7 @@ A pnpm workspace (decision 0009): apps in `apps/`, shared libraries in `packages
 ## Workflow
 
 - From the repo root: `vp install`, then `vp check` (format, lint, types), `vp test` (every package), `vp run -r build` (prerenders; fails on invalid content). `vp run ready` runs all three.
-- One app: `vp -C apps/home <command>`, or `vp run @messi/home#<script>`. `vp run dev` starts the homepage.
+- One app: `vp -C apps/home <command>`, or `vp run @messi/home#<script>`. `vp run dev` starts the homepage, `vp run dev:games` starts Tubas games.
 - Run the `review` skill on your diff before handing off.
 - Work on branches and open PRs. Never push to `main`: it is the owner's content channel and deploys on every push.
 - CI fails PRs that touch `apps/*/content/` unless the owner labels them `content-approved`.

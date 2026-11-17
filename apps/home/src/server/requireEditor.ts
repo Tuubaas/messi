@@ -1,7 +1,7 @@
 import { createMiddleware } from "@tanstack/react-start";
 import { getRequest, setResponseStatus } from "@tanstack/react-start/server";
 import { Effect, Result } from "effect";
-import { EditorAuth } from "./EditorAuth";
+import { EditorAuth } from "@messi/access";
 import { runServer } from "./runtime.server";
 
 /** Guard for every editor server function: only the configured editor gets through. */

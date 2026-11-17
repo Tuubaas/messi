@@ -17,8 +17,9 @@ The owner can overrule any of these.
 | Layout: `apps/*` deployable apps, `packages/*` shared libraries, `tools/*` repo tooling                                        | The layout `vp create vite:monorepo` generates                                            |
 | Root `vite.config.ts` owns lint, format, test projects and task caching; app configs only build their app                      | Vite+ applies root lint/fmt everywhere and ignores package-level blocks in `vp check`     |
 | Package names `@messi/home`, `@messi/lint`; custom lint rules are the `tools/lint` package                                     | Lint rules are repo-wide, and get their own tests and dependencies                        |
+| Code shared by apps is a source-only package in `packages/` (first: `@messi/access`, the Cloudflare Access check)              | No build step; each app's bundler compiles it                                             |
 | TanStack Intent runs from the root                                                                                             | It finds skills in every workspace package, so `pnpm exec intent load ...` works anywhere |
-| Deploy still runs on every push to `main`, with no path filter                                                                 | Only one app; avoids a missed path skipping a content deploy                              |
+| Deploy still runs on every push to `main`, with no path filter; every app deploys in parallel (since 0010)                     | Avoids a missed path skipping a content deploy                                            |
 
 ## Consequences
 

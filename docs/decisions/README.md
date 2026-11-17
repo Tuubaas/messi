@@ -18,3 +18,5 @@ Open questions for the owner go in [`proposed/`](proposed/) (see the `propose-de
 | [0007](0007-codify-patterns.md)      | Every found pattern becomes a lint rule or review check | owner |
 | [0008](0008-agent-defaults.md)       | Implementation defaults chosen during setup             | agent |
 | [0009](0009-monorepo.md)             | Monorepo; the homepage app lives in `apps/home`         | owner |
+| [0010](0010-tubas-games.md)          | Tubas games: quiz-board app in `apps/games`, on D1      | owner |
+| [0011](0011-buzzers.md)              | Phones as buzzers, fair by press time; Durable Objects  | owner |

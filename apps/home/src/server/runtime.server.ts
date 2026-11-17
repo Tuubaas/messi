@@ -2,7 +2,7 @@ import { env } from "cloudflare:workers";
 import { Effect, Layer, ManagedRuntime, Redacted, Schema } from "effect";
 import homeMarkdown from "../../content/home.md?raw";
 import { ContentStore } from "./ContentStore";
-import { EditorAuth } from "./EditorAuth";
+import { EditorAuth } from "@messi/access";
 
 /** Worker settings, set as Cloudflare secrets (see docs/setup.md). */
 const WorkerSettings = Schema.Struct({
