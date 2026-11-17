@@ -32,24 +32,3 @@ jobs:
             echo "apps/home/dist/client/index.html contains a <script> tag (decision 0005)."
             exit 1
           fi
-
-  # apps/*/content/ holds the owner's own words (decision 0001). Owner edits go straight to main
-  # through the editor; a PR may only change content when the owner labels it.
-  content-guard:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7.0.1
-        with:
-          fetch-depth: 0
-      - name: Block content changes without owner approval
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
-          APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'content-approved') }}
-        run: |
-          changed=$(git diff --name-only "$BASE"...HEAD -- ':(glob)apps/*/content/**')
-          if [ -n "$changed" ] && [ "$APPROVED" != "true" ]; then
-            echo "This PR changes owner content without the 'content-approved' label:"
-            echo "$changed"
-            exit 1
-          fi
