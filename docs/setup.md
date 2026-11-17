@@ -5,17 +5,17 @@ Everything here is free. Do it once. The owner runs these steps, because they ne
 ## 1. GitHub
 
 1. Create the public repo and push `main`.
-2. Create a **fine-grained personal access token**: only this repository, permission **Contents: Read and write**. The editor uses it to commit `content/home.md`.
+2. Create a **fine-grained personal access token**: only this repository, permission **Contents: Read and write**. The editor uses it to commit `apps/home/content/home.md`.
 3. Configure the deploy workflow (Settings → Secrets and variables → Actions):
    - Secret `CLOUDFLARE_API_TOKEN`: a Cloudflare API token with the "Edit Cloudflare Workers" template.
    - Variable `CLOUDFLARE_ACCOUNT_ID`. Deploys are skipped until this is set.
 4. Optional: protect `main` with a ruleset that requires PRs and passing CI, with yourself (repo admin) as a bypass actor, so the editor's token can still commit content.
-5. Create a label `content-approved`. Only you add it, to let a PR change `content/`.
+5. Create a label `content-approved`. Only you add it, to let a PR change `apps/*/content/`.
 
 ## 2. Cloudflare Worker
 
-1. `vp install`, then `pnpm exec wrangler login` and `pnpm run deploy` once. This creates the `messi` Worker at `https://messi.<your-subdomain>.workers.dev`.
-2. Set the Worker secrets (`pnpm exec wrangler secret put <NAME>`):
+1. `vp install` at the repo root. Then, in `apps/home`: `pnpm exec wrangler login` and `pnpm run deploy` once. This creates the `messi` Worker at `https://messi.<your-subdomain>.workers.dev`.
+2. Set the Worker secrets (in `apps/home`: `pnpm exec wrangler secret put <NAME>`):
 
 | Secret                  | Value                                                         |
 | ----------------------- | ------------------------------------------------------------- |

@@ -51,7 +51,7 @@ describe("ContentStore.gitHub", () => {
     expect(file).toMatchObject({ markdown: "# Hi ✨", revision: "abc" });
     expect(github.recorded[0]).toMatchObject({
       method: "GET",
-      url: "https://api.github.com/repos/owner/site/contents/content/home.md?ref=main",
+      url: "https://api.github.com/repos/owner/site/contents/apps/home/content/home.md?ref=main",
       authorization: "Bearer secret",
     });
   });

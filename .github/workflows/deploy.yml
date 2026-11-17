@@ -18,6 +18,9 @@ jobs:
     # Skips until Cloudflare is set up (docs/setup.md), so early pushes don't fail.
     if: vars.CLOUDFLARE_ACCOUNT_ID != ''
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/home
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: voidzero-dev/setup-vp@v1.22.0

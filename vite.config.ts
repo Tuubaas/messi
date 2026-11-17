@@ -1,23 +1,21 @@
-import { cloudflare } from "@cloudflare/vite-plugin";
-import tailwindcss from "@tailwindcss/vite";
-import { devtools } from "@tanstack/devtools-vite";
-import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import viteReact from "@vitejs/plugin-react";
-import { defineConfig, lazyPlugins } from "vite-plus";
+import { defineConfig } from "vite-plus";
 
-/** Pages rendered to static HTML at build time. Everything else is rendered by the Worker. */
-const prerenderedPages = ["/"];
+const generated = ["**/routeTree.gen.ts", "**/worker-configuration.d.ts"];
 
+/**
+ * Workspace root: lint, format, test and task settings for every package.
+ * Build and dev config lives in each app's own vite.config.ts.
+ */
 const config = defineConfig({
   fmt: {
-    ignorePatterns: ["src/routeTree.gen.ts", "worker-configuration.d.ts"],
+    ignorePatterns: generated,
   },
   lint: {
-    ignorePatterns: ["src/routeTree.gen.ts", "worker-configuration.d.ts"],
+    ignorePatterns: generated,
     plugins: ["eslint", "typescript", "unicorn", "oxc", "react", "import", "node", "vitest"],
     jsPlugins: [
       { name: "vite-plus", specifier: "vite-plus/oxlint-plugin" },
-      { name: "messi", specifier: "./lint/messi.ts" },
+      { name: "messi", specifier: "./tools/lint/messi.ts" },
     ],
     rules: {
       "vite-plus/prefer-vite-plus-imports": "error",
@@ -29,36 +27,19 @@ const config = defineConfig({
     overrides: [
       // Build tooling runs in Node, not the Worker, so process.env is fine there.
       {
-        files: ["vite.config.ts", "lint/**", "scripts/**"],
+        files: ["**/vite.config.ts", "tools/**"],
         rules: { "node/no-process-env": "off" },
       },
     ],
     options: { typeAware: true, typeCheck: true },
   },
+  // `vp test` at the root runs every package's tests with that package's own config.
   test: {
-    include: ["src/**/*.test.{ts,tsx}", "lint/**/*.test.ts"],
+    projects: ["apps/*", "tools/*"],
   },
-  resolve: { tsconfigPaths: true },
-  plugins: lazyPlugins(() =>
-    // Unit tests run in plain Node; the Worker and Start plugins are only for dev and build.
-    process.env.VITEST
-      ? [viteReact()]
-      : [
-          devtools(),
-          cloudflare({ viteEnvironment: { name: "ssr" } }),
-          tailwindcss(),
-          tanstackStart({
-            pages: prerenderedPages.map((path) => ({ path })),
-            prerender: {
-              enabled: true,
-              autoStaticPathsDiscovery: false,
-              crawlLinks: false,
-              failOnError: true,
-            },
-          }),
-          viteReact(),
-        ],
-  ),
+  run: {
+    cache: true,
+  },
 });
 
 export default config;

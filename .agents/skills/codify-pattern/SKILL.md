@@ -14,12 +14,12 @@ Write one sentence each: **the rule**, **why**, and **where it came from** (deci
 ## 2. Choose the enforcement (in this order)
 
 1. **Types**: make the wrong code not compile, e.g. a typed registry or branded type. Strongest; no rule needed.
-2. **Built-in Oxlint rule**: check `vp lint --rules` for an existing rule (eslint, typescript, react, unicorn, import, node, jsdoc, promise, vitest…). Configure it in the `lint` block of `vite.config.ts`, with `overrides` for file-scoped rules.
-3. **Custom rule** in `lint/messi.ts`:
+2. **Built-in Oxlint rule**: check `vp lint --rules` for an existing rule (eslint, typescript, react, unicorn, import, node, jsdoc, promise, vitest…). Configure it in the `lint` block of the root `vite.config.ts`, with `overrides` for file- or package-scoped rules. Never add a `lint` block to a package's own config.
+3. **Custom rule** in `tools/lint/messi.ts`:
    - Import the API from `vite-plus/lint/plugins` (never `oxlint`/`@oxlint/plugins`).
    - `meta.docs.description` states the rule; the message says how to fix it.
-   - Add valid and invalid cases to `lint/messi.test.ts` with `RuleTester`, including the near-miss that must stay valid.
-   - Enable it as `"messi/<rule>": "error"` in `vite.config.ts`.
+   - Add valid and invalid cases to `tools/lint/messi.test.ts` with `RuleTester`, including the near-miss that must stay valid.
+   - Enable it as `"messi/<rule>": "error"` in the root `vite.config.ts`.
 4. **Review check**: only if it needs judgment. Add one checklist line to `.agents/skills/review/SKILL.md` under the matching section.
 
 ## 3. Apply and record

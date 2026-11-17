@@ -16,4 +16,4 @@ When it's unclear which side something falls on, it's the owner's call.
 
 - Agents escalate with the `propose-decision` skill instead of choosing.
 - Agent-chosen defaults are logged (see 0008) so the owner can overrule them.
-- `content/` is never edited by agents (CI guard on PRs).
+- `apps/*/content/` is never edited by agents (CI guard on PRs).

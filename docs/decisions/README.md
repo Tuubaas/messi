@@ -17,3 +17,4 @@ Open questions for the owner go in [`proposed/`](proposed/) (see the `propose-de
 | [0006](0006-design-pending.md)       | Visual design is pending; bare placeholder for now      | owner |
 | [0007](0007-codify-patterns.md)      | Every found pattern becomes a lint rule or review check | owner |
 | [0008](0008-agent-defaults.md)       | Implementation defaults chosen during setup             | agent |
+| [0009](0009-monorepo.md)             | Monorepo; the homepage app lives in `apps/home`         | owner |

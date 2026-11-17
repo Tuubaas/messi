@@ -1,0 +1,12 @@
+{
+  "name": "@messi/lint",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vp test"
+  },
+  "devDependencies": {
+    "effect": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}
